@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h3>좋아요 누른 게시글</h3>
+    {% for like in likes %}
+    <div>
+    <ul>
+        <li>
+        <a href="{% url 'detail' like.post.pk %}">{{ like.post.title }}</a>
+        </li>
+    </ul>
+    </div>
+    {% endfor %}
+    <h3>찜하기 누른 게시글</h3>
+    {% for poke in pokes %}
+    <div>
+      <ul>
+        <li>
+          <a href="{% url 'detail' poke.post.pk %}">{{ poke.post.title }}</a>
+        </li>
+      </ul>
+    </div>
+    {% endfor %}
+{% endblock content %}

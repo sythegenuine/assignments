@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div>
+    <div>
+      <div>{{ post.title }}</div>
+      <div>{{ post.content }}</div>
+    </div>
+    <a href="{% url 'home' %}">홈으로</a>
+
+    {% if user.is_authenticated and post.author.pk == user.pk %}
+    <a href="{% url 'edit' post.pk %}">수정하기</a>
+    <a href="{% url 'delete' post.pk %}">삭제하기</a>
+    {% endif %}
+
+    {% for comment in post.comments.all %}
+      <li>{{ comment.content }}</li>
+      {% if user.is_authenticated and comment.author.pk == user.pk %}
+      <a href="{% url 'delete_comment' post.pk comment.pk %}">댓글삭제</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+    <form method="POST">
+      {% csrf_token %}
+      <input type="text" name="content" placeholder="댓글을 입력하세요">
+      <button type="submit">댓글 쓰기</button>
+    </form>
+
+    <button id="like-button" onclick="like()">좋아요</button>
+    <button id="poke-button" onclick="poke()">찜하기</button>
+    {% endif %}
+      <div id="like-count">좋아요 {{post.likes.count}}개</div>
+      <div id="poke-count">찜하기 {{post.pokes.count}}개</div>
+  </div>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  const likeButton = document.getElementById("like-button")
+  const pokeButton = document.getElementById("poke-button")
+
+  const like = () => {
+    axios
+    .post('/like', {post_pk:"{{post.pk}}"})
+    .then(response => {
+    if (response.data.check) {
+      likeButton.style.color = "red"
+    } else {
+      likeButton.style.color = "black"
+    }
+    document.getElementById('like-count').innerHTML = '좋아요'+response.data.like_count +'개'
+    })
+    .catch(err => console.error(err))
+  }
+
+  const poke = () => {
+    axios
+    .post('/poke', {post_pk:"{{post.pk}}"})
+    .then(response => {
+      console.log(response)
+      if (response.data.check) {
+        pokeButton.style.color = "blue"
+      } else {
+        pokeButton.style.color = "black"
+      }
+      document.getElementById('poke-count').innerHTML = '찜하기' + response.data.poke_count + '개'}
+    )
+    .catch(err => console.error(err))
+  }
+
+  const check = () => {
+    axios
+    .post('/likeCheck', {post_pk:"{{post.pk}}"})
+    .then(response => {
+      if (response.data.existing) {
+        likeButton.style.color = "red"
+      } else {
+        likeButton.style.color = "black"
+      }
+    })
+
+    axios
+    .post('/pokeCheck', {post_pk:"{{post.pk}}"})
+    .then(response => {
+      if (response.data.existing) {
+        pokeButton.style.color = "blue"
+      } else {
+        pokeButton.style.color = "black"
+      }
+    })
+  }
+  function init() {
+    check();
+  }
+  init();
+</script>
+{% endblock content %}
